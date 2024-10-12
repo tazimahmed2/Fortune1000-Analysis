@@ -1,0 +1,116 @@
+install.packages("readr") # For reading CSV files
+install.packages("dplyr") # For data manipulation
+install.packages("ggplot2") # For visualizations
+install.packages("tidyr") # For tidying data
+# Load the libraries
+
+library(readr)
+library(dplyr)
+library(ggplot2)
+
+# Load the dataset
+
+fortune1000 <- read_csv("fortune1000_2023.csv")
+
+# View the first few rows
+
+head(fortune1000)
+
+# Get a summary of the dataset
+
+summary(fortune1000)
+
+# Check the structure of the dataset
+
+str(fortune1000)
+
+# Calculate the mean, median, and standard deviation
+
+summary_stats <- fortune1000 %>%
+  summarise(
+    Mean_Revenue = mean(Revenues_M, na.rm = TRUE),
+    Median_Revenue = median(Revenues_M, na.rm = TRUE),
+    SD_Revenue = sd(Revenues_M, na.rm = TRUE),
+    Mean_Profit = mean(Profits_M, na.rm = TRUE),
+    Meidan_Profit = median(Profits_M, na.rm = TRUE),
+    SD_Profit = sd(Profits_M, na.rm = TRUE)
+  )
+
+summary_stats
+
+# Create a summary table for each industy
+
+industry_summary <- fortune1000 %>%
+  group_by(Industry) %>%
+  summarise(
+    Avg_Revenue = mean(Revenues_M, na.rm = TRUE),
+    Avg_Profit = mean(Profits_M, na.rm = TRUE),
+    Total_Employees = sum(Number_of_employees, na.rm = TRUE)
+  )
+    
+ industry_summary
+ 
+ # Visualize the distribution of revenue across all companies
+ 
+ ggplot(fortune1000, aes(x = Revenues_M))+
+   geom_histogram(binwidth = 500, fill = "blue", color = "black")+
+   labs( title = "Distribution of Revenue Across Fortune 1000 Companies", x ="Reveneues_M", y = "Frequency")
+)
+
+# Identify and visualize the top 10 companies by revenue
+
+top10_revenue <- fortune1000 %>%
+  arrange(desc(Revenues_M)) %>%
+  head(10)
+
+
+# Compare the average profit across different industries
+
+top10_industry_profit <- fortune1000 %>%
+  group_by(Industry) %>%
+  summarise(Avg_Profit = mean(Profits_M, na.rm = TRUE)) %>%
+  arrange(desc(Avg_Profit)) %>%
+  head(10) # Select the top 10 industries
+
+
+ggplot(top10_industry_profit, aes(x = reorder(Industry, Avg_Profit), y = Avg_Profit)) +
+  geom_bar(stat = "identity", fill = "purple") +
+  coord_flip() +
+  labs(title = "Industires by Average Profit", x = "Industry", y = "Average Profit")
+
+)
+
+# Installing and loading scales
+
+install.packages("scales")
+library(scales)
+
+# Analyze the relationship between a company's revenue and profit
+
+ggplot(fortune1000, aes(x = Revenues_M, y = Profits_M))+
+  geom_point(color = "blue", alpha = 0.6)+
+  geom_smooth(method = "lm", color = "red", se = FALSE)+
+  labs(title = "Relationship Between Revenue and Profit", x = "Revenue", y = "Profit")+
+  scale_y_continuous(labels = comma)+
+  scale_x_continuous(labels = comma) # use the comma() function to format numbers
+
+# Examine the correlation between key financial variables(Revenue, Profit, and Employees)
+
+
+cor_matrix 
+
+# Visualize the correlation matrix using corrplot
+
+install.packages("corrplot") # Installing corrplot package
+library(corrplot) # Loading corrplot package
+
+corrplot(cor_matrix, method = "circle")
+
+# Run a linear regression to see how revenue predict profit
+
+model <- lm(Profits_M ~ Revenues_M, data = fortune1000)
+summary(model)
+
+# Save the cleaned data
+
+write.csv(fortune1000, "fortune1000_clean.csv")
